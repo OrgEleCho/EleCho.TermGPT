@@ -1,0 +1,6 @@
+[submodule "CJsonObject"]
+	path = CJsonObject
+	url = https://github.com/Bwar/CJsonObject.git
+[submodule "inifile2"]
+	path = inifile2
+	url = https://github.com/Winnerhust/inifile2.git
