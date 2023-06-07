@@ -1,5 +1,7 @@
+#pragma once
+#include "threadsafedeque.hpp"
 #include <iostream>
-#pragma ocne
+
 #include "openaiapi.h"
 #include <string>
 class BaseRoute
@@ -27,17 +29,20 @@ class ApiPostRoute
     virtual std::string run() = 0;
 };
 
-class ApiPostRouteWithSSEResponse : public ApiPostRoute
+class ApiPostRouteWithSSEResponse
 {
-};
+  protected:
+    ThreadSafeDeque<std::string> event_quene;
 
-// 可用的api
-
-class OpenaiModels : public ApiGetRoute
-{
   public:
-    std::string run()
+    bool try_get_event(std::string &event)
     {
-        return OpenaiApi::get("/v1/models", std::map<std::string, std::string>());
+        // 取出一个，如果以\n结尾，就是一个完整的event，否则继续取，直到取到\n结尾的event，剩下的放回去
+        std::string temp;
+        
+
+        return event_quene.try_pop_front(event);
     }
+
+    virtual void run() = 0;
 };
