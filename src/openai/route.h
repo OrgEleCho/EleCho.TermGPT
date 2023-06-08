@@ -32,16 +32,32 @@ class ApiPostRoute
 class ApiPostRouteWithSSEResponse
 {
   protected:
+    std::string buf;
+    std::deque<std::string> events;
     ThreadSafeDeque<std::string> event_quene;
 
   public:
     bool try_get_event(std::string &event)
     {
-        // 取出一个，如果以\n结尾，就是一个完整的event，否则继续取，直到取到\n结尾的event，剩下的放回去
-        std::string temp;
-        
+        while(event_quene.try_pop_front(event))
+        {
+            buf.append(event);
+        }
+        // 把buf按照\n\n分割，放到events里面，最后剩下的如果没有换行符，就放到buf里面
+        size_t pos = 0;
+        while((pos = buf.find("\n\n")) != std::string::npos)
+        {
+            events.push_back(buf.substr(0, pos));
+            buf.erase(0, pos + 2);
+        }
 
-        return event_quene.try_pop_front(event);
+        if(events.size() > 0)
+        {
+            event = events.front();
+            events.pop_front();
+            return true;
+        }
+        return false;
     }
 
     virtual void run() = 0;

@@ -50,6 +50,10 @@ void OpenaiApi::set_api_key(std::string k)
 }
 std::string OpenaiApi::get(std::string route, std::map<std::string, std::string> params)
 {
+        if (!is_inited())
+    {
+        throw std::runtime_error("api not inited");
+    }
     std::string url = base_url + route;
     std::string response;
     bool result = webclient.Get(
@@ -62,6 +66,10 @@ std::string OpenaiApi::get(std::string route, std::map<std::string, std::string>
 }
 std::string OpenaiApi::post(std::string route, std::string body)
 {
+        if (!is_inited())
+    {
+        throw std::runtime_error("api not inited");
+    }
     std::string url = base_url + route;
     std::string response;
     bool result = webclient.Post(
@@ -74,12 +82,14 @@ std::string OpenaiApi::post(std::string route, std::string body)
 }
 void OpenaiApi::post_with_sse_response(std::string route, std::string body, ThreadSafeDeque<std::string> &event_queue)
 {
+    if (!is_inited())
+    {
+        throw std::runtime_error("api not inited");
+    }
     std::string url = base_url + route;
-    std::string buf;
-    bool result = webclient.Post(
-        url, headers, body,
-        [&](const char *data, size_t len) {
-            buf.append(data, len);
+    bool result = webclient.Post(url, headers, body, [&](const char *data, size_t len) {
+            std::string response(data, len);
+            event_queue.push_back(response);
         },
         timeout);
     if (!result)
